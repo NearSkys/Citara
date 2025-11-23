@@ -369,6 +369,33 @@ document.addEventListener('modal:open', async (ev) => {
     });
   });
 
+  // Left nav behavior: scroll to section and highlight
+  try {
+    const navItems = modal.querySelectorAll('.nav-item[data-target]');
+    navItems.forEach(a => {
+      a.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        // active class
+        navItems.forEach(x => x.classList.remove('active'));
+        a.classList.add('active');
+        const targetId = a.dataset.target;
+        const target = modal.querySelector(`#${targetId}`);
+        if (!target) return;
+        // smooth scroll
+        try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { target.scrollIntoView(); }
+        // visual highlight: temporary background
+        try {
+          const origBg = target.style.backgroundColor || '';
+          target.style.transition = 'background-color 240ms ease-in-out';
+          target.style.backgroundColor = 'rgba(16,185,129,0.06)';
+          setTimeout(() => {
+            try { target.style.backgroundColor = origBg; } catch (e) {}
+          }, 1500);
+        } catch (e) { /* ignore */ }
+      });
+    });
+  } catch (e) { console.warn('nav wiring failed', e); }
+
   // load default export format into select
   try {
     const s = readSettings();

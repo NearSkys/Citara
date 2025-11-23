@@ -27,19 +27,19 @@
             </header>
 
             <div class="modal-body">
-                <aside style="width: 16rem; border-right: 1px solid var(--neutral-200); padding: 1rem;">
+                    <aside style="width: 16rem; border-right: 1px solid var(--neutral-200); padding: 1rem;">
                     <nav style="display: flex; flex-direction: column; gap: 0.25rem;">
-                        <a href="#" class="nav-item active" style="font-weight: 600;">General</a>
-                        <a href="#" class="nav-item">API Keys</a>
-                        <a href="#" class="nav-item">Export</a>
-                        <a href="#" class="nav-item">Appearance</a>
+                        <a href="#" class="nav-item active" style="font-weight: 600;" data-target="section-general">General</a>
+                        <a href="#" class="nav-item" data-target="section-api-keys">API Keys</a>
+                        <a href="#" class="nav-item" data-target="section-export">Export</a>
+                        <a href="#" class="nav-item" data-target="section-appearance">Appearance</a>
                     </nav>
                 </aside>
 
                 <div style="flex: 1; overflow-y: auto; padding: 2rem;">
                     <div style="max-width: 32rem; margin: 0 auto; display: flex; flex-direction: column; gap: 2.5rem;">
                         <!-- API Keys Section -->
-                        <section>
+                        <section id="section-api-keys">
                             <h3 class="font-bold" style="font-size: 1rem;">API Keys</h3>
                             <p class="text-sm" style="color: var(--text-muted); margin-top: 0.25rem;">Configure access
                                 to external services to enhance your research.</p>
@@ -128,7 +128,7 @@
                         <div style="border-top: 1px solid var(--neutral-200);"></div>
 
                         <!-- AI Config Section -->
-                        <section>
+                        <section id="section-general">
                             <h3 class="font-bold" style="font-size: 1rem;">AI Configuration</h3>
                             <p class="text-sm" style="color: var(--text-muted); margin-top: 0.25rem;">Select your
                                 default model for AI-powered features like summarization.</p>
@@ -152,7 +152,7 @@
                         <div style="border-top: 1px solid var(--neutral-200);"></div>
 
                         <!-- Export Settings Section -->
-                        <section>
+                        <section id="section-export">
                             <h3 class="font-bold" style="font-size: 1rem;">Export Settings</h3>
                             <p class="text-sm" style="color: var(--text-muted); margin-top: 0.25rem;">Choose the default
                                 format for exporting your citations.</p>
@@ -173,6 +173,12 @@
                                     </select>
                                 </div>
                             </div>
+                        </section>
+                        
+                        <!-- Appearance Section -->
+                        <section id="section-appearance">
+                            <h3 class="font-bold" style="font-size: 1rem;">Appearance</h3>
+                            <p class="text-sm" style="color: var(--text-muted); margin-top: 0.25rem;">Appearance settings placeholder.</p>
                         </section>
                     </div>
                 </div>
