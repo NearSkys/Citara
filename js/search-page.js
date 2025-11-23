@@ -14,6 +14,48 @@ let lastTotal = 0;
 let pageSize = 10;
 let isAuthorView = false;
 let currentAuthorName = '';
+let lastPaperItems = [];
+
+function createPaperHtml(items) {
+  return items.map(p => {
+    const title = Utils.escapeHtml(p.title || 'Sem título');
+    const authors = Array.isArray(p.authors) ? p.authors.map(a => a.name).join(', ') : '';
+    const year = p.year || '—';
+    const doi = p.doi || (p.externalIds && p.externalIds.DOI) || '';
+    const paperId = p.paperId || p.id || '';
+    const semanticUrl = paperId ? `https://www.semanticscholar.org/paper/${encodeURIComponent(paperId)}` : '';
+    const doiUrl = doi ? `https://doi.org/${encodeURIComponent(doi)}` : '';
+    const link = doiUrl || semanticUrl || (p.url || '#');
+    const sourceLabel = doiUrl ? 'DOI' : (semanticUrl ? 'Semantic Scholar' : 'Link');
+
+    return `<div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">
+        <div>
+          <a href="${link}" target="_blank" rel="noopener" style="display:inline-block;">
+            <h4 class="font-bold" style="font-size:1rem; margin-bottom:0.25rem;">${title}</h4>
+          </a>
+          <p class="text-sm" style="color: var(--text-muted);">${Utils.escapeHtml(authors)}</p>
+          <div style="display:flex; align-items:center; gap:1rem; margin-top:0.5rem; font-size:0.75rem; color: var(--neutral-500);">
+            <span>${year}</span>
+            <span style="width:4px;height:4px;border-radius:50%;background-color:var(--neutral-500);"></span>
+            <span title="Source">${Utils.escapeHtml(p.publicationVenue || p.venue || '')}</span>
+            <span style="margin-left:0.5rem; color:var(--text-muted);">(${sourceLabel})</span>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:0.5rem; align-items:flex-end;">
+          <a class="btn btn-outline" href="${link}" target="_blank" rel="noopener" style="text-decoration:none;">
+            <span class="material-symbols-outlined">open_in_new</span>
+            <span>Open</span>
+          </a>
+          <button class="btn btn-primary-light" data-add-citation="${Utils.escapeHtml(paperId)}">
+            <span class="material-symbols-outlined">add</span>
+            <span>Adicionar</span>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 function setLoading(msg = 'Buscando...') {
   resultsEl.innerHTML = `<div class="card" style="text-align:center; padding:1.5rem;">${msg}</div>`;
@@ -213,50 +255,91 @@ async function performSearch(query, page = 1) {
       if (headerCountEl) headerCountEl.textContent = 'Sem resultados';
     }
   } else {
-    const html = paperRes.items.map(p => {
-      const title = Utils.escapeHtml(p.title || 'Sem título');
-      const authors = Array.isArray(p.authors) ? p.authors.map(a => a.name).join(', ') : '';
-      const year = p.year || '—';
-      const doi = p.doi || (p.externalIds && p.externalIds.DOI) || '';
-      const paperId = p.paperId || p.id || '';
-      const semanticUrl = paperId ? `https://www.semanticscholar.org/paper/${encodeURIComponent(paperId)}` : '';
-      const doiUrl = doi ? `https://doi.org/${encodeURIComponent(doi)}` : '';
-      const link = doiUrl || semanticUrl || (p.url || '#');
-      const sourceLabel = doiUrl ? 'DOI' : (semanticUrl ? 'Semantic Scholar' : 'Link');
-
-      return `<div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">
-            <div>
-              <a href="${link}" target="_blank" rel="noopener" style="display:inline-block;">
-                <h4 class="font-bold" style="font-size:1rem; margin-bottom:0.25rem;">${title}</h4>
-              </a>
-              <p class="text-sm" style="color: var(--text-muted);">${Utils.escapeHtml(authors)}</p>
-              <div style="display:flex; align-items:center; gap:1rem; margin-top:0.5rem; font-size:0.75rem; color: var(--neutral-500);">
-                <span>${year}</span>
-                <span style="width:4px;height:4px;border-radius:50%;background-color:var(--neutral-500);"></span>
-                <span title="Source">${Utils.escapeHtml(p.publicationVenue || p.venue || '')}</span>
-                <span style="margin-left:0.5rem; color:var(--text-muted);">(${sourceLabel})</span>
-              </div>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:0.5rem; align-items:flex-end;">
-              <a class="btn btn-outline" href="${link}" target="_blank" rel="noopener" style="text-decoration:none;">
-                <span class="material-symbols-outlined">open_in_new</span>
-                <span>Open</span>
-              </a>
-              <button class="btn btn-primary-light" data-add-citation="${Utils.escapeHtml(paperId)}">
-                <span class="material-symbols-outlined">add</span>
-                <span>Adicionar</span>
-              </button>
-            </div>
-          </div>
-        </div>`;
-    }).join('');
+    // store last items for filtering
+    lastPaperItems = paperRes.items.slice();
+    const html = createPaperHtml(paperRes.items);
     papersContainer.innerHTML = html;
 
     if (headerCountEl) headerCountEl.textContent = `Mostrando página ${currentPage} de ${Math.ceil(paperRes.total / pageSize)} (${paperRes.total} resultados)`;
     renderPagination(paperRes.total);
   }
 }
+
+  // Apply filters emitted by filters modal — simple client-side filtering of last fetched papers
+  function applyFiltersClientSide(filters) {
+    if (!lastPaperItems || !lastPaperItems.length) return;
+    const f = Object.assign({}, filters || {});
+
+    const matchText = (source, needle) => {
+      if (!needle) return true;
+      if (!source) return false;
+      return String(source).toLowerCase().indexOf(String(needle).toLowerCase()) !== -1;
+    };
+
+    const parseYearFilter = (y) => {
+      if (!y) return null;
+      const s = String(y).trim();
+      const m = s.match(/^(\d{4})-(\d{4})$/);
+      if (m) return { from: parseInt(m[1],10), to: parseInt(m[2],10) };
+      const n = parseInt(s,10);
+      if (!isNaN(n)) return { from: n, to: n };
+      return null;
+    };
+
+    const yearRange = parseYearFilter(f.year);
+
+    const filtered = lastPaperItems.filter(p => {
+      if (f.title && !matchText(p.title, f.title)) return false;
+      const authorsStr = Array.isArray(p.authors) ? p.authors.map(a => a.name).join(', ') : '';
+      if (f.authors && !matchText(authorsStr, f.authors)) return false;
+      if (yearRange) {
+        const py = p.year ? parseInt(p.year,10) : NaN;
+        if (isNaN(py)) return false;
+        if (py < yearRange.from || py > yearRange.to) return false;
+      }
+      if (f.type && f.type.trim()) {
+        const venue = (p.publicationVenue || p.venue || '').toLowerCase();
+        if (venue.indexOf(String(f.type).toLowerCase()) === -1) return false;
+      }
+      if (f.keyword && f.keyword.trim()) {
+        const hay = (p.title || '') + ' ' + (p.abstract || '') + ' ' + (p.publicationVenue || '') + ' ' + (p.venue || '');
+        if (!matchText(hay, f.keyword)) return false;
+      }
+      if (f.tags && f.tags.trim()) {
+        const tags = f.tags.split(',').map(t=>t.trim().toLowerCase()).filter(Boolean);
+        if (tags.length) {
+          const pTags = (p.tags || p.keywords || []).map(t => (typeof t === 'string' ? t : (t.name||'')).toLowerCase());
+          const any = tags.some(t => pTags.indexOf(t) !== -1);
+          if (!any) return false;
+        }
+      }
+      return true;
+    });
+
+    // render into papers-list container if present
+    const papersContainer = document.getElementById('papers-list');
+    if (papersContainer) {
+      if (!filtered.length) papersContainer.innerHTML = '<div class="card" style="text-align:center; padding:1.5rem;">Nenhum artigo encontrado com os filtros aplicados.</div>';
+      else papersContainer.innerHTML = createPaperHtml(filtered);
+      if (headerCountEl) headerCountEl.textContent = `${filtered.length} resultado(s) após filtros`;
+      // hide pagination when filtering client-side
+      paginationEl.innerHTML = '';
+    }
+  }
+
+  // Listen for filters events
+  document.addEventListener('filters:apply', (e) => {
+    try { applyFiltersClientSide(e.detail && e.detail.filters); } catch (err) { console.error('filters apply error', err); }
+  });
+  document.addEventListener('filters:reset', () => {
+    // restore last fetched items
+    const papersContainer = document.getElementById('papers-list');
+    if (papersContainer) {
+      if (!lastPaperItems || !lastPaperItems.length) papersContainer.innerHTML = '<div class="card" style="text-align:center; padding:1.5rem;">Sem resultados.</div>';
+      else papersContainer.innerHTML = createPaperHtml(lastPaperItems);
+      if (headerCountEl) headerCountEl.textContent = lastTotal ? `Mostrando página ${currentPage} de ${Math.ceil(lastTotal / pageSize)} (${lastTotal} resultados)` : '';
+    }
+  });
 
 async function loadAuthorPapers(authorId, name) {
   isAuthorView = true;
