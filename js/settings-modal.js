@@ -82,6 +82,109 @@ async function saveKeysFromForm(modal) {
   writeStore(store);
 }
 
+// Provider model discovery (best-effort). Try live API endpoints; on failure fall back to static lists.
+async function fetchModelsForProvider(provider, key) {
+  try {
+    if (!key) return null;
+    if (provider === 'openrouter') {
+      // Best-effort: try OpenRouter models endpoint
+      const res = await fetch('https://api.openrouter.ai/v1/models', { headers: { Authorization: `Bearer ${key}` } });
+      if (!res.ok) throw new Error('openrouter fetch failed');
+      const j = await res.json();
+      // Expect array in j.models or j.data
+      const arr = j.models || j.data || j;
+      return Array.isArray(arr) ? arr.map(m => (m.id || m.name || m.model || String(m))).filter(Boolean) : null;
+    }
+
+    if (provider === 'gpt') {
+      // Try OpenAI-style models endpoint
+      const res = await fetch('https://api.openai.com/v1/models', { headers: { Authorization: `Bearer ${key}` } });
+      if (!res.ok) throw new Error('openai fetch failed');
+      const j = await res.json();
+      const arr = j.data || j.models || [];
+      return Array.isArray(arr) ? arr.map(m => (m.id || m.name || String(m))).filter(Boolean) : null;
+    }
+
+    if (provider === 'gemini') {
+      // Use Google Generative Language models endpoint as suggested.
+      // Note: this expects a valid API key that has permission to list models.
+      const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('gemini fetch failed');
+      const j = await res.json();
+      const arr = j.models || [];
+      // Filter to generation-capable models (generateContent)
+      const chatModels = Array.isArray(arr) ? arr.filter(m => (m.supportedGenerationMethods || []).includes('generateContent')) : [];
+      return chatModels.map(m => (m.name || m.displayName || m.model || String(m))).filter(Boolean);
+    }
+
+    return null;
+  } catch (e) {
+    console.warn('model discovery failed for', provider, e);
+    return null;
+  }
+}
+
+function applyModelsToSelect(modal, providersModels) {
+  const sel = modal.querySelector('#default-ai-model-select');
+  if (!sel) return;
+  // clear
+  sel.innerHTML = '';
+
+  // If we have models grouped by provider, add optgroups
+  let added = 0;
+  for (const { provider, models } of providersModels) {
+    if (!models || models.length === 0) continue;
+    const og = document.createElement('optgroup');
+    og.label = provider.toUpperCase();
+    models.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = `${provider}::${m}`;
+      opt.textContent = m;
+      og.appendChild(opt);
+      added++;
+    });
+    sel.appendChild(og);
+  }
+
+  if (added === 0) {
+    // fallback default options
+    const defaults = ['gpt-4', 'gpt-3.5-turbo', 'Gemini 1.5 Pro'];
+    defaults.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = `default::${m}`;
+      opt.textContent = m;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+async function refreshAvailableModels(modal) {
+  const store = readStore();
+  const providers = [];
+  if (store.gemini) providers.push({ provider: 'gemini', key: await decryptText(store.gemini) });
+  if (store.openrouter) providers.push({ provider: 'openrouter', key: await decryptText(store.openrouter) });
+  if (store.gpt) providers.push({ provider: 'gpt', key: await decryptText(store.gpt) });
+
+  const providersModels = [];
+  for (const p of providers) {
+    const models = await fetchModelsForProvider(p.provider, p.key);
+    if (models && models.length) providersModels.push({ provider: p.provider, models });
+    else {
+      // fallback lists
+      const FALLBACK = {
+        gemini: ['Gemini 1.0 Pro', 'Gemini 1.5 Pro', 'Gemini 1.5 Flash'],
+        openrouter: ['OpenRouter-Standard', 'OpenRouter-Pro'],
+        gpt: ['gpt-4', 'gpt-4o', 'gpt-3.5-turbo']
+      };
+      providersModels.push({ provider: p.provider, models: FALLBACK[p.provider] || [] });
+    }
+  }
+
+  applyModelsToSelect(modal, providersModels);
+}
+
+
 document.addEventListener('modal:open', async (ev) => {
   const name = ev.detail?.name;
   if (name !== 'settings') return;
@@ -100,6 +203,8 @@ document.addEventListener('modal:open', async (ev) => {
   if (saveBtn) saveBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     await saveKeysFromForm(modal);
+    // refresh available models after saving keys
+    refreshAvailableModels(modal).catch(() => {});
     document.dispatchEvent(new CustomEvent('modal:close'));
   });
 
@@ -112,17 +217,39 @@ document.addEventListener('modal:open', async (ev) => {
   if (testOpen) testOpen.addEventListener('click', async () => {
     const key = modal.querySelector('#key-openrouter').value.trim();
     if (!key) return alert('No OpenRouter key present');
-    alert('Key present (not sent). Use your backend to validate in production.');
+    alert('Key present. Attempting to discover available models...');
+    // attempt discovery live then update select
+    try {
+      const models = await fetchModelsForProvider('openrouter', key);
+      if (models && models.length) applyModelsToSelect(modal, [{ provider: 'openrouter', models }]);
+      else await refreshAvailableModels(modal);
+    } catch (e) {
+      await refreshAvailableModels(modal);
+    }
   });
   if (testGem) testGem.addEventListener('click', async () => {
     const key = modal.querySelector('#key-gemini').value.trim();
     if (!key) return alert('No Gemini key present');
-    alert('Key present (not sent). Use your backend to validate in production.');
+    alert('Key present. Attempting to discover available models...');
+    try {
+      const models = await fetchModelsForProvider('gemini', key);
+      if (models && models.length) applyModelsToSelect(modal, [{ provider: 'gemini', models }]);
+      else await refreshAvailableModels(modal);
+    } catch (e) {
+      await refreshAvailableModels(modal);
+    }
   });
   if (testGpt) testGpt.addEventListener('click', async () => {
     const key = modal.querySelector('#key-gpt').value.trim();
     if (!key) return alert('No GPT key present');
-    alert('Key present (not sent). Use your backend to validate in production.');
+    alert('Key present. Attempting to discover available models...');
+    try {
+      const models = await fetchModelsForProvider('gpt', key);
+      if (models && models.length) applyModelsToSelect(modal, [{ provider: 'gpt', models }]);
+      else await refreshAvailableModels(modal);
+    } catch (e) {
+      await refreshAvailableModels(modal);
+    }
   });
 
   // Collapsible API blocks UI
