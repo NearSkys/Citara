@@ -45,7 +45,7 @@
                                 to external services to enhance your research.</p>
 
                             <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                                <div class="api-block" data-provider="gemini" style="border: 1px solid var(--neutral-300); border-radius: var(--radius-lg); background-color: var(--background-light);">
+                            <div class="api-block" data-provider="gemini" style="border: 1px solid var(--neutral-300); border-radius: var(--radius-lg); background-color: var(--background-light);">
                                         <button class="api-toggle"
                                         style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: none; cursor: pointer;" aria-expanded="true">
                                         <span class="text-sm font-medium" style="color: var(--text-main);">Gemini</span>
@@ -63,19 +63,15 @@
                                                      placeholder="Enter your Gemini API key" />
                                              </div>
                                          </div>
-                                         <button id="test-gemini" class="btn btn-outline" style="width: 100%;">
-                                             <span class="material-symbols-outlined"
-                                                 style="font-size: 1.125rem;">api</span>
-                                             <span>Test API Key</span>
-                                         </button>
+                                        <div>
+                                            <button class="btn btn-outline add-api-key" data-provider="gemini" style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+                                                <span class="material-symbols-outlined" style="font-size: 1.125rem;">add</span>
+                                                <span>Add API Key</span>
+                                            </button>
+                                        </div>
                                      </div>
                                 </div>
-
-                                <button class="btn btn-outline"
-                                    style="width: 100%; border-style: dashed; border-width: 2px; height: 2.5rem;">
-                                    <span class="material-symbols-outlined" style="font-size: 1.25rem;">add</span>
-                                    <span>Add API Key</span>
-                                </button>
+                                
                             </div>
                         </section>
 
@@ -96,10 +92,12 @@
                                                 <input id="key-openrouter" type="password" class="search-input" style="padding-left: 2.25rem;" placeholder="Enter your OpenRouter API key" />
                                             </div>
                                         </div>
-                                        <button id="test-openrouter" class="btn btn-outline" style="width: 100%;">
-                                            <span class="material-symbols-outlined" style="font-size: 1.125rem;">api</span>
-                                            <span>Test API Key</span>
-                                        </button>
+                                        <div>
+                                            <button class="btn btn-outline add-api-key" data-provider="openrouter" style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+                                                <span class="material-symbols-outlined" style="font-size: 1.125rem;">add</span>
+                                                <span>Add API Key</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -116,10 +114,12 @@
                                                 <input id="key-gpt" type="password" class="search-input" style="padding-left: 2.25rem;" placeholder="Enter your GPT provider key" />
                                             </div>
                                         </div>
-                                        <button id="test-gpt" class="btn btn-outline" style="width: 100%;">
-                                            <span class="material-symbols-outlined" style="font-size: 1.125rem;">api</span>
-                                            <span>Test API Key</span>
-                                        </button>
+                                        <div>
+                                            <button class="btn btn-outline add-api-key" data-provider="gpt" style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+                                                <span class="material-symbols-outlined" style="font-size: 1.125rem;">add</span>
+                                                <span>Add API Key</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -163,8 +163,9 @@
                                 <div style="position: relative; margin-top: 0.5rem;">
                                     <span class="material-symbols-outlined text-muted"
                                         style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 1rem;">file_download</span>
-                                    <select class="search-input form-select" style="padding-left: 2.25rem;">
+                                    <select id="default-export-format-select" class="search-input form-select" style="padding-left: 2.25rem;">
                                         <option selected>BibTeX</option>
+                                        <option>ABNT</option>
                                         <option>RIS</option>
                                         <option>MLA</option>
                                         <option>APA</option>

@@ -1,5 +1,6 @@
 const STORAGE_KEY = 'citara.apikeys.v1';
 const KEY_STORE = 'citara.cryptoKey.v1';
+const SETTINGS_STORE = 'citara.settings.v1';
 
 function bufToBase64(buf) {
   return btoa(String.fromCharCode(...new Uint8Array(buf)));
@@ -61,24 +62,64 @@ function writeStore(obj) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); } catch (e) { console.warn(e); }
 }
 
+function readSettings() {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_STORE) || '{}'); } catch (e) { return {}; }
+}
+
+function writeSettings(obj) {
+  try { localStorage.setItem(SETTINGS_STORE, JSON.stringify(obj)); } catch (e) { console.warn(e); }
+}
+
 async function loadKeysToForm(modal) {
   const store = readStore();
   const or = modal.querySelector('#key-openrouter');
   const gem = modal.querySelector('#key-gemini');
   const gpt = modal.querySelector('#key-gpt');
-  if (store.openrouter) or.value = await decryptText(store.openrouter);
-  if (store.gemini) gem.value = await decryptText(store.gemini);
-  if (store.gpt) gpt.value = await decryptText(store.gpt);
+  // mark static inputs as dynamic key inputs
+  if (or) { or.classList.add('api-key-input'); or.dataset.provider = 'openrouter'; }
+  if (gem) { gem.classList.add('api-key-input'); gem.dataset.provider = 'gemini'; }
+  if (gpt) { gpt.classList.add('api-key-input'); gpt.dataset.provider = 'gpt'; }
+
+  // helper to populate keys (support array or single stored object)
+  async function populate(providerKey, inputEl) {
+    const val = store[providerKey];
+    if (!val) return;
+    if (Array.isArray(val)) {
+      // first value -> static input
+      const first = val[0];
+      if (first && inputEl) inputEl.value = await decryptText(first);
+      // remaining -> create rows
+      for (let i = 1; i < val.length; i++) {
+        const v = await decryptText(val[i]);
+        createApiKeyRow(modal, providerKey, v);
+      }
+    } else {
+      if (inputEl) inputEl.value = await decryptText(val);
+    }
+  }
+
+  await populate('openrouter', or);
+  await populate('gemini', gem);
+  await populate('gpt', gpt);
 }
 
 async function saveKeysFromForm(modal) {
-  const or = modal.querySelector('#key-openrouter').value.trim();
-  const gem = modal.querySelector('#key-gemini').value.trim();
-  const gpt = modal.querySelector('#key-gpt').value.trim();
   const store = readStore();
-  if (or) store.openrouter = await encryptText(or); else delete store.openrouter;
-  if (gem) store.gemini = await encryptText(gem); else delete store.gemini;
-  if (gpt) store.gpt = await encryptText(gpt); else delete store.gpt;
+  // collect keys per provider from all inputs
+  const providers = ['openrouter', 'gemini', 'gpt'];
+  for (const p of providers) {
+    const inputs = Array.from(modal.querySelectorAll(`.api-key-input[data-provider="${p}"]`));
+    const values = inputs.map(i => (i.value || '').trim()).filter(Boolean);
+    if (values.length > 0) {
+      const encs = [];
+      for (const v of values) {
+        encs.push(await encryptText(v));
+      }
+      store[p] = encs;
+    } else {
+      delete store[p];
+    }
+  }
   writeStore(store);
 }
 
@@ -125,6 +166,78 @@ async function fetchModelsForProvider(provider, key) {
   }
 }
 
+function createApiKeyRow(modal, provider, initialValue = '') {
+  const block = modal.querySelector(`.api-block[data-provider="${provider}"]`);
+  if (!block) return null;
+  const body = block.querySelector('.api-block-body');
+  if (!body) return null;
+
+  const row = document.createElement('div');
+  row.className = 'api-key-row';
+  row.style.display = 'flex';
+  row.style.gap = '0.5rem';
+  row.style.alignItems = 'center';
+  row.innerHTML = `
+    <div style="position: relative; flex: 1;">
+      <span class="material-symbols-outlined text-muted" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 1rem;">key</span>
+      <input type="password" class="search-input api-key-input" data-provider="${provider}" style="padding-left: 2.25rem; width: 100%;" value="${initialValue ? initialValue.replace(/"/g,'&quot;') : ''}" />
+    </div>
+    <button class="btn btn-outline test-row-btn" type="button" style="flex:0 0 auto;">
+      <span class="material-symbols-outlined" style="font-size: 1.125rem;">api</span>
+      <span>Test</span>
+    </button>
+    <button class="btn btn-outline remove-api-key" type="button" style="flex:0 0 auto;">
+      <span class="material-symbols-outlined" style="font-size: 1.125rem;">delete</span>
+    </button>
+  `;
+
+  // insert before the buttons wrapper if present (the add/test buttons group)
+  const btnAdd = body.querySelector('.add-api-key');
+  if (btnAdd && btnAdd.parentElement) {
+    body.insertBefore(row, btnAdd.parentElement);
+  } else {
+    body.appendChild(row);
+  }
+
+  // wire test for this row
+  const testBtn = row.querySelector('.test-row-btn');
+  const input = row.querySelector('.api-key-input');
+  const removeBtn = row.querySelector('.remove-api-key');
+
+  if (testBtn) testBtn.addEventListener('click', async () => {
+    const key = (input.value || '').trim();
+    if (!key) return;
+    testBtn.disabled = true;
+    const orig = testBtn.innerHTML;
+    testBtn.innerHTML = 'Checking...';
+    try {
+      const models = await fetchModelsForProvider(provider, key);
+      if (models && models.length) {
+        applyModelsToSelect(modal, [{ provider, models }]);
+        testBtn.style.backgroundColor = '#16a34a';
+        testBtn.style.color = '#ffffff';
+        testBtn.innerHTML = 'OK ✓';
+        setTimeout(() => { try { testBtn.innerHTML = orig; testBtn.style.backgroundColor = ''; testBtn.style.color = ''; testBtn.disabled = false; } catch (e) {} }, 1500);
+      } else {
+        // fallback: refresh all models
+        await refreshAvailableModels(modal);
+        testBtn.innerHTML = orig;
+        testBtn.disabled = false;
+      }
+    } catch (e) {
+      console.warn(provider, 'row test failed', e);
+      try { testBtn.innerHTML = orig; } catch (e) {}
+      testBtn.disabled = false;
+    }
+  });
+
+  if (removeBtn) removeBtn.addEventListener('click', () => {
+    row.remove();
+  });
+
+  return row;
+}
+
 function applyModelsToSelect(modal, providersModels) {
   const sel = modal.querySelector('#default-ai-model-select');
   if (!sel) return;
@@ -157,14 +270,44 @@ function applyModelsToSelect(modal, providersModels) {
       sel.appendChild(opt);
     });
   }
+
+  // attempt to restore previously saved default AI model
+  try {
+    const s = readSettings();
+    const desired = s.defaultAIModel;
+    if (desired) {
+      // try to set by value first
+      let matched = false;
+      for (let i = 0; i < sel.options.length; i++) {
+        const o = sel.options[i];
+        if (o.value === desired || o.text === desired) { o.selected = true; matched = true; break; }
+      }
+      // if not matched but there is an optgroup with matching text, try a loose match
+      if (!matched) {
+        for (let i = 0; i < sel.options.length; i++) {
+          const o = sel.options[i];
+          if ((o.text || '').toLowerCase().includes(String(desired).toLowerCase())) { o.selected = true; matched = true; break; }
+        }
+      }
+    }
+  } catch (e) { /* ignore */ }
 }
 
 async function refreshAvailableModels(modal) {
   const store = readStore();
   const providers = [];
-  if (store.gemini) providers.push({ provider: 'gemini', key: await decryptText(store.gemini) });
-  if (store.openrouter) providers.push({ provider: 'openrouter', key: await decryptText(store.openrouter) });
-  if (store.gpt) providers.push({ provider: 'gpt', key: await decryptText(store.gpt) });
+  if (store.gemini) {
+    const val = Array.isArray(store.gemini) ? store.gemini[0] : store.gemini;
+    providers.push({ provider: 'gemini', key: await decryptText(val) });
+  }
+  if (store.openrouter) {
+    const val = Array.isArray(store.openrouter) ? store.openrouter[0] : store.openrouter;
+    providers.push({ provider: 'openrouter', key: await decryptText(val) });
+  }
+  if (store.gpt) {
+    const val = Array.isArray(store.gpt) ? store.gpt[0] : store.gpt;
+    providers.push({ provider: 'gpt', key: await decryptText(val) });
+  }
 
   const providersModels = [];
   for (const p of providers) {
@@ -194,62 +337,122 @@ document.addEventListener('modal:open', async (ev) => {
   await getOrCreateKey(); // ensure key exists
   await loadKeysToForm(modal);
 
+  // Transform static inputs (e.g. #key-gemini) into api-key-row layout so
+  // every key appears as a row with Test and Delete buttons on the right.
+  try {
+    ['gemini','openrouter','gpt'].forEach(provider => {
+      const staticInput = modal.querySelector(`#key-${provider}`);
+      if (!staticInput) return;
+      // find the containing outer div that holds label and input wrapper
+      const innerDiv = staticInput.parentElement; // the div around input
+      const outerDiv = innerDiv ? innerDiv.parentElement : null; // the div that contains the label and innerDiv
+      const currentVal = staticInput.value || '';
+      // remove the original input wrapper so we don't show plain input
+      try { if (innerDiv && innerDiv.parentElement) innerDiv.remove(); } catch (e) {}
+
+      // create a new api-key row for the current value
+      const row = createApiKeyRow(modal, provider, currentVal);
+      if (row && outerDiv && outerDiv.parentElement) {
+        // move the created row right after the label block (outerDiv)
+        outerDiv.parentElement.insertBefore(row, outerDiv.nextSibling);
+      }
+    });
+  } catch (e) { console.warn('transform static inputs failed', e); }
+
+  // wire 'Add API Key' buttons
+  const addButtons = modal.querySelectorAll('.add-api-key');
+  addButtons.forEach(b => {
+    b.addEventListener('click', (e) => {
+      e.preventDefault();
+      const prov = b.dataset.provider;
+      createApiKeyRow(modal, prov, '');
+    });
+  });
+
+  // load default export format into select
+  try {
+    const s = readSettings();
+    const sel = modal.querySelector('#default-export-format-select');
+    if (sel) {
+      const value = s.exportFormat || sel.value || sel.options[sel.selectedIndex]?.text || 'BibTeX';
+      // if option exists, set it; otherwise add it and select
+      let found = Array.from(sel.options).some(opt => opt.value === value || opt.text === value);
+      if (!found) {
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = value;
+        sel.appendChild(opt);
+      }
+      sel.value = value;
+    }
+  } catch (e) { console.warn('load export format failed', e); }
+
+  // populate available models from configured providers
+  try {
+    await refreshAvailableModels(modal);
+  } catch (e) { console.warn('refresh models failed', e); }
+
   const saveBtn = modal.querySelector('#settings-save');
   const cancelBtn = modal.querySelector('#settings-cancel');
-  const testOpen = modal.querySelector('#test-openrouter');
-  const testGem = modal.querySelector('#test-gemini');
-  const testGpt = modal.querySelector('#test-gpt');
 
   if (saveBtn) saveBtn.addEventListener('click', async (e) => {
     e.preventDefault();
-    await saveKeysFromForm(modal);
-    // refresh available models after saving keys
-    refreshAvailableModels(modal).catch(() => {});
-    document.dispatchEvent(new CustomEvent('modal:close'));
+    // disable controls while saving
+    try {
+      if (saveBtn) { saveBtn.disabled = true; }
+      if (cancelBtn) { cancelBtn.disabled = true; }
+
+      await saveKeysFromForm(modal);
+      // refresh available models after saving keys
+      await refreshAvailableModels(modal).catch(() => {});
+
+      // persist export format and default AI model selection as part of settings
+      try {
+        const selExport = modal.querySelector('#default-export-format-select');
+        const selAI = modal.querySelector('#default-ai-model-select');
+        const s = readSettings();
+        if (selExport) s.exportFormat = selExport.value || selExport.options[selExport.selectedIndex]?.text || '';
+        if (selAI) s.defaultAIModel = selAI.value || selAI.options[selAI.selectedIndex]?.text || '';
+        writeSettings(s);
+        if (selExport) document.dispatchEvent(new CustomEvent('settings:export-format:changed', { detail: { format: s.exportFormat } }));
+        if (selAI) document.dispatchEvent(new CustomEvent('settings:ai-model:changed', { detail: { model: s.defaultAIModel } }));
+      } catch (e) { console.warn('save settings failed', e); }
+
+      // visual confirmation on the Save button: green + check text for 1.5s
+      try {
+        const originalText = saveBtn.innerHTML;
+        const originalBg = saveBtn.style.backgroundColor || '';
+        const originalColor = saveBtn.style.color || '';
+        // set green background and white text
+        saveBtn.style.backgroundColor = '#16a34a';
+        saveBtn.style.color = '#ffffff';
+        saveBtn.innerText = 'Saved ✓';
+
+        // keep confirmation visible for 1.5s then close modal
+        setTimeout(() => {
+          try {
+            // restore (optional) and close
+            saveBtn.innerHTML = originalText;
+            saveBtn.style.backgroundColor = originalBg;
+            saveBtn.style.color = originalColor;
+          } catch (e) {}
+          document.dispatchEvent(new CustomEvent('modal:close'));
+        }, 1500);
+      } catch (e) {
+        // fallback: close immediately
+        document.dispatchEvent(new CustomEvent('modal:close'));
+      }
+    } catch (err) {
+      console.error('Save failed', err);
+      alert('Falha ao salvar as configurações. Veja o console para detalhes.');
+      if (saveBtn) saveBtn.disabled = false;
+      if (cancelBtn) cancelBtn.disabled = false;
+    }
   });
 
   if (cancelBtn) cancelBtn.addEventListener('click', (e) => {
     e.preventDefault();
     document.dispatchEvent(new CustomEvent('modal:close'));
-  });
-
-  // Basic test handlers - just attempt a fetch to provider base (no secrets sent)
-  if (testOpen) testOpen.addEventListener('click', async () => {
-    const key = modal.querySelector('#key-openrouter').value.trim();
-    if (!key) return alert('No OpenRouter key present');
-    alert('Key present. Attempting to discover available models...');
-    // attempt discovery live then update select
-    try {
-      const models = await fetchModelsForProvider('openrouter', key);
-      if (models && models.length) applyModelsToSelect(modal, [{ provider: 'openrouter', models }]);
-      else await refreshAvailableModels(modal);
-    } catch (e) {
-      await refreshAvailableModels(modal);
-    }
-  });
-  if (testGem) testGem.addEventListener('click', async () => {
-    const key = modal.querySelector('#key-gemini').value.trim();
-    if (!key) return alert('No Gemini key present');
-    alert('Key present. Attempting to discover available models...');
-    try {
-      const models = await fetchModelsForProvider('gemini', key);
-      if (models && models.length) applyModelsToSelect(modal, [{ provider: 'gemini', models }]);
-      else await refreshAvailableModels(modal);
-    } catch (e) {
-      await refreshAvailableModels(modal);
-    }
-  });
-  if (testGpt) testGpt.addEventListener('click', async () => {
-    const key = modal.querySelector('#key-gpt').value.trim();
-    if (!key) return alert('No GPT key present');
-    alert('Key present. Attempting to discover available models...');
-    try {
-      const models = await fetchModelsForProvider('gpt', key);
-      if (models && models.length) applyModelsToSelect(modal, [{ provider: 'gpt', models }]);
-      else await refreshAvailableModels(modal);
-    } catch (e) {
-      await refreshAvailableModels(modal);
-    }
   });
 
   // Collapsible API blocks UI
@@ -293,9 +496,50 @@ document.addEventListener('modal:open', async (ev) => {
 
 export async function getStoredApiKeys() {
   const store = readStore();
-  return {
-    openrouter: store.openrouter ? await decryptText(store.openrouter) : '',
-    gemini: store.gemini ? await decryptText(store.gemini) : '',
-    gpt: store.gpt ? await decryptText(store.gpt) : ''
-  };
+  const out = {};
+  for (const p of ['openrouter', 'gemini', 'gpt']) {
+    if (!store[p]) { out[p] = []; continue; }
+    if (Array.isArray(store[p])) {
+      out[p] = [];
+      for (const e of store[p]) out[p].push(await decryptText(e));
+    } else {
+      out[p] = [await decryptText(store[p])];
+    }
+  }
+  return out;
+}
+
+export function getDefaultExportFormat() {
+  const s = readSettings();
+  if (s && s.exportFormat) return s.exportFormat;
+  // fallback to select default if available in DOM
+  try {
+    const sel = document.querySelector('#default-export-format-select');
+    if (sel) return sel.value || sel.options[sel.selectedIndex]?.text || 'BibTeX';
+  } catch (e) {}
+  return 'BibTeX';
+}
+
+export function setDefaultExportFormat(format) {
+  const s = readSettings();
+  s.exportFormat = format;
+  writeSettings(s);
+  document.dispatchEvent(new CustomEvent('settings:export-format:changed', { detail: { format } }));
+}
+
+export function getDefaultAIModel() {
+  const s = readSettings();
+  if (s && s.defaultAIModel) return s.defaultAIModel;
+  try {
+    const sel = document.querySelector('#default-ai-model-select');
+    if (sel) return sel.value || sel.options[sel.selectedIndex]?.text || '';
+  } catch (e) {}
+  return '';
+}
+
+export function setDefaultAIModel(model) {
+  const s = readSettings();
+  s.defaultAIModel = model;
+  writeSettings(s);
+  document.dispatchEvent(new CustomEvent('settings:ai-model:changed', { detail: { model } }));
 }
