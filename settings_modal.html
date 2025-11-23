@@ -45,32 +45,30 @@
                                 to external services to enhance your research.</p>
 
                             <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                                <div
-                                    style="border: 1px solid var(--neutral-300); border-radius: var(--radius-lg); background-color: var(--background-light);">
-                                    <button
-                                        style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: none; cursor: pointer;">
-                                        <span class="text-sm font-medium">OpenRouter</span>
-                                        <span class="material-symbols-outlined text-muted">expand_more</span>
+                                <div class="api-block" data-provider="gemini" style="border: 1px solid var(--neutral-300); border-radius: var(--radius-lg); background-color: var(--background-light);">
+                                        <button class="api-toggle"
+                                        style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: none; cursor: pointer;" aria-expanded="true">
+                                        <span class="text-sm font-medium" style="color: var(--text-main);">Gemini</span>
+                                        <span class="material-symbols-outlined" style="color: var(--text-main);">expand_more</span>
                                     </button>
-                                    <div
-                                        style="border-top: 1px solid var(--neutral-300); padding: 1rem; display: flex; flex-direction: column; gap: 1rem;">
-                                        <div>
-                                            <label class="text-sm font-medium"
-                                                style="display: block; color: var(--text-main);">API Key</label>
-                                            <div style="position: relative; margin-top: 0.5rem;">
-                                                <span class="material-symbols-outlined text-muted"
-                                                    style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 1rem;">key</span>
-                                                <input type="password" class="search-input"
-                                                    style="padding-left: 2.25rem;"
-                                                    placeholder="Enter your OpenRouter API key" />
-                                            </div>
-                                        </div>
-                                        <button class="btn btn-outline" style="width: 100%;">
-                                            <span class="material-symbols-outlined"
-                                                style="font-size: 1.125rem;">api</span>
-                                            <span>Test API Key</span>
-                                        </button>
-                                    </div>
+                                    <div class="api-block-body" style="border-top: 1px solid var(--neutral-300); padding: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                                         <div>
+                                             <label class="text-sm font-medium"
+                                                 style="display: block; color: var(--text-main);">API Key</label>
+                                             <div style="position: relative; margin-top: 0.5rem;">
+                                                 <span class="material-symbols-outlined text-muted"
+                                                     style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 1rem;">key</span>
+                                                 <input id="key-gemini" type="password" class="search-input"
+                                                     style="padding-left: 2.25rem;"
+                                                     placeholder="Enter your Gemini API key" />
+                                             </div>
+                                         </div>
+                                         <button id="test-gemini" class="btn btn-outline" style="width: 100%;">
+                                             <span class="material-symbols-outlined"
+                                                 style="font-size: 1.125rem;">api</span>
+                                             <span>Test API Key</span>
+                                         </button>
+                                     </div>
                                 </div>
 
                                 <button class="btn btn-outline"
@@ -78,6 +76,52 @@
                                     <span class="material-symbols-outlined" style="font-size: 1.25rem;">add</span>
                                     <span>Add API Key</span>
                                 </button>
+                            </div>
+                        </section>
+
+                        <!-- Additional Providers -->
+                        <section>
+                            <h3 class="font-bold" style="font-size: 1rem; margin-top:1rem;">Other Providers</h3>
+                            <div style="margin-top: 1rem; display:flex; flex-direction:column; gap:1rem;">
+                                <div class="api-block" data-provider="openrouter" style="border: 1px solid var(--neutral-300); border-radius: var(--radius-lg); background-color: var(--background-light);">
+                                    <button class="api-toggle" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: none; cursor: pointer;" aria-expanded="true">
+                                        <span class="text-sm font-medium" style="color: var(--text-main);">OpenRouter</span>
+                                        <span class="material-symbols-outlined" style="color: var(--text-main);">expand_more</span>
+                                    </button>
+                                    <div class="api-block-body" style="border-top: 1px solid var(--neutral-300); padding: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                                        <div>
+                                            <label class="text-sm font-medium" style="display: block; color: var(--text-main);">API Key</label>
+                                            <div style="position: relative; margin-top: 0.5rem;">
+                                                <span class="material-symbols-outlined text-muted" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 1rem;">key</span>
+                                                <input id="key-openrouter" type="password" class="search-input" style="padding-left: 2.25rem;" placeholder="Enter your OpenRouter API key" />
+                                            </div>
+                                        </div>
+                                        <button id="test-openrouter" class="btn btn-outline" style="width: 100%;">
+                                            <span class="material-symbols-outlined" style="font-size: 1.125rem;">api</span>
+                                            <span>Test API Key</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="api-block" data-provider="gpt" style="border: 1px solid var(--neutral-300); border-radius: var(--radius-lg); background-color: var(--background-light);">
+                                    <button class="api-toggle" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: none; cursor: pointer;" aria-expanded="true">
+                                        <span class="text-sm font-medium" style="color: var(--text-main);">GPT Provider</span>
+                                        <span class="material-symbols-outlined" style="color: var(--text-main);">expand_more</span>
+                                    </button>
+                                    <div class="api-block-body" style="border-top: 1px solid var(--neutral-300); padding: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                                        <div>
+                                            <label class="text-sm font-medium" style="display: block; color: var(--text-main);">API Key</label>
+                                            <div style="position: relative; margin-top: 0.5rem;">
+                                                <span class="material-symbols-outlined text-muted" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 1rem;">key</span>
+                                                <input id="key-gpt" type="password" class="search-input" style="padding-left: 2.25rem;" placeholder="Enter your GPT provider key" />
+                                            </div>
+                                        </div>
+                                        <button id="test-gpt" class="btn btn-outline" style="width: 100%;">
+                                            <span class="material-symbols-outlined" style="font-size: 1.125rem;">api</span>
+                                            <span>Test API Key</span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </section>
 
@@ -134,8 +178,8 @@
             </div>
 
             <footer class="modal-footer">
-                <button class="btn btn-outline">Cancel</button>
-                <button class="btn btn-primary">Save Changes</button>
+                <button class="btn btn-outline" id="settings-cancel">Cancel</button>
+                <button class="btn btn-primary" id="settings-save">Save Changes</button>
             </footer>
         </div>
     </div>
