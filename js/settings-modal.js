@@ -128,13 +128,36 @@ async function fetchModelsForProvider(provider, key) {
   try {
     if (!key) return null;
     if (provider === 'openrouter') {
-      // Best-effort: try OpenRouter models endpoint
-      const res = await fetch('https://api.openrouter.ai/v1/models', { headers: { Authorization: `Bearer ${key}` } });
-      if (!res.ok) throw new Error('openrouter fetch failed');
-      const j = await res.json();
-      // Expect array in j.models or j.data
-      const arr = j.models || j.data || j;
-      return Array.isArray(arr) ? arr.map(m => (m.id || m.name || m.model || String(m))).filter(Boolean) : null;
+      // Try multiple OpenRouter endpoints (some users report different domains)
+      const endpoints = [
+        'https://openrouter.ai/api/v1/models',
+        'https://api.openrouter.ai/v1/models'
+      ];
+      for (const url of endpoints) {
+        try {
+          const res = await fetch(url, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${key}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (!res.ok) {
+            // try next endpoint
+            console.warn('openrouter models fetch not ok', url, res.status);
+            continue;
+          }
+          const j = await res.json();
+          const arr = j.data || j.models || j;
+          return Array.isArray(arr) ? arr.map(m => (m.id || m.name || m.model || String(m))).filter(Boolean) : null;
+        } catch (err) {
+          // network/CORS/other error - try next endpoint
+          console.warn('openrouter fetch failed for', url, err);
+          continue;
+        }
+      }
+      // all attempts failed
+      throw new Error('openrouter fetch attempts failed');
     }
 
     if (provider === 'gpt') {
@@ -210,6 +233,17 @@ function createApiKeyRow(modal, provider, initialValue = '') {
     testBtn.disabled = true;
     const orig = testBtn.innerHTML;
     testBtn.innerHTML = 'Checking...';
+    // ensure status element exists
+    let status = row.querySelector('.api-test-status');
+    if (!status) {
+      status = document.createElement('div');
+      status.className = 'api-test-status';
+      status.style.marginLeft = '0.5rem';
+      status.style.fontSize = '0.9rem';
+      status.style.color = 'var(--text-muted)';
+      row.appendChild(status);
+    }
+    status.textContent = '';
     try {
       const models = await fetchModelsForProvider(provider, key);
       if (models && models.length) {
@@ -217,17 +251,26 @@ function createApiKeyRow(modal, provider, initialValue = '') {
         testBtn.style.backgroundColor = '#16a34a';
         testBtn.style.color = '#ffffff';
         testBtn.innerHTML = 'OK ✓';
-        setTimeout(() => { try { testBtn.innerHTML = orig; testBtn.style.backgroundColor = ''; testBtn.style.color = ''; testBtn.disabled = false; } catch (e) {} }, 1500);
+        status.textContent = 'Models discovered';
+        status.style.color = '#16a34a';
+        setTimeout(() => { try { testBtn.innerHTML = orig; testBtn.style.backgroundColor = ''; testBtn.style.color = ''; testBtn.disabled = false; status.textContent = ''; } catch (e) {} }, 1500);
       } else {
         // fallback: refresh all models
         await refreshAvailableModels(modal);
+        status.textContent = 'No models found (fallback)';
+        status.style.color = '#d97706';
         testBtn.innerHTML = orig;
         testBtn.disabled = false;
       }
     } catch (e) {
       console.warn(provider, 'row test failed', e);
-      try { testBtn.innerHTML = orig; } catch (e) {}
+      try { testBtn.innerHTML = orig; } catch (err) {}
       testBtn.disabled = false;
+      // show error message inline (CORS or network)
+      try {
+        status.textContent = `Error: ${e.message || String(e)}`;
+        status.style.color = '#dc2626';
+      } catch (err) {}
     }
   });
 
