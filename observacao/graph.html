@@ -16,12 +16,13 @@
 <body>
     <div class="app-container">
         <header class="app-header">
-                <div class="header-left">
+            <div class="header-left">
                 <div class="logo-area">
                     <span class="material-symbols-outlined logo-icon">local_library</span>
                     <h2 class="logo-text">Citara</h2>
                 </div>
-                <button id="open-projects" class="btn-icon hidden" aria-label="Open projects" title="Open projects" aria-expanded="true" style="margin-left:8px;">
+                <button id="open-projects" class="btn-icon hidden" aria-label="Open projects" title="Open projects"
+                    aria-expanded="true" style="margin-left:8px;">
                     <span class="material-symbols-outlined">menu_open</span>
                 </button>
                 <nav class="nav-pills">
@@ -58,11 +59,12 @@
                 <div class="sidebar-section">
                     <div class="sidebar-header">
                         <h3 class="sidebar-title">Projects</h3>
-                        <button id="close-projects" class="btn-icon" style="width: auto; height: auto;" aria-label="Close projects" title="Close projects" aria-controls="projects-sidebar">
+                        <button id="close-projects" class="btn-icon" style="width: auto; height: auto;"
+                            aria-label="Close projects" title="Close projects" aria-controls="projects-sidebar">
                             <span class="material-symbols-outlined">menu_open</span>
                         </button>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <div id="project-list" style="display: flex; flex-direction: column; gap: 0.25rem;">
                         <a class="nav-item active" href="#">
                             <span>Thesis Chapter 1</span>
                             <span class="material-symbols-outlined more-icon">more_horiz</span>
@@ -96,7 +98,8 @@
                         <span class="breadcrumb-separator">/</span>
                         <span class="breadcrumb-item active">Thesis Chapter 1</span>
                     </div>
-                    <button id="open-details" class="btn-icon hidden" aria-label="Open details" title="Open details" aria-expanded="false">
+                    <button id="open-details" class="btn-icon hidden" aria-label="Open details" title="Open details"
+                        aria-expanded="false">
                         <span class="material-symbols-outlined">chevron_right</span>
                     </button>
                 </div>
@@ -192,7 +195,7 @@
                         <span class="material-symbols-outlined">content_copy</span>
                         <span>Copy</span>
                     </button>
-                    <button class="btn btn-primary" style="flex: 1;" data-modal="edit">
+                    <button class="btn btn-primary" style="flex: 1;">
                         <span class="material-symbols-outlined">edit</span>
                         <span>Edit</span>
                     </button>
@@ -200,8 +203,8 @@
             </aside>
         </div>
     </div>
+    <script type="module" src="js/app.js" defer></script>
     <script src="js/modals.js" defer></script>
-    <script type="module" src="js/edit-modal.js" defer></script>
     <script>
         // Details panel open/close handlers for pages that don't load the full app module
         (function () {
@@ -256,7 +259,7 @@
             // Ensure that when some other script shows details, the open button is hidden
             document.addEventListener('click', (e) => {
                 // clicking a graph node or similar should hide the open button
-                if (e.target.closest('.graph-node') || e.target.closest('.p-3') || e.target.closest('.project-item')) {
+                if (e.target.closest('.graph-node') || e.target.closest('.p-3') || e.target.closest('.nav-item')) {
                     if (openBtn) openBtn.classList.add('hidden');
                     if (panel) panel.classList.remove('collapsed');
                 }

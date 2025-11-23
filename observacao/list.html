@@ -16,17 +16,18 @@
 <body>
     <div class="app-container">
         <header class="app-header">
-                <div class="header-left">
+            <div class="header-left">
                 <div class="logo-area">
                     <span class="material-symbols-outlined logo-icon">local_library</span>
                     <h2 class="logo-text">Citara</h2>
                 </div>
-                <button id="open-projects" class="btn-icon hidden" aria-label="Open projects" title="Open projects" aria-expanded="true" style="margin-left:8px;">
+                <button id="open-projects" class="btn-icon hidden" aria-label="Open projects" title="Open projects"
+                    aria-expanded="true" style="margin-left:8px;">
                     <span class="material-symbols-outlined">menu_open</span>
                 </button>
                 <nav class="nav-pills">
-                    <a class="nav-link active" href="#">Graph View</a>
-                    <a class="nav-link" href="list.html">List View</a>
+                    <a class="nav-link" href="graph.html">Graph View</a>
+                    <a class="nav-link active" href="#">List View</a>
                     <a class="nav-link" href="search.html">Search</a>
                 </nav>
             </div>
@@ -58,11 +59,12 @@
                 <div class="sidebar-section">
                     <div class="sidebar-header">
                         <h3 class="sidebar-title">Projects</h3>
-                        <button id="close-projects" class="btn-icon" style="width: auto; height: auto;" aria-label="Close projects" title="Close projects" aria-controls="projects-sidebar">
+                        <button id="close-projects" class="btn-icon" style="width: auto; height: auto;"
+                            aria-label="Close projects" title="Close projects" aria-controls="projects-sidebar">
                             <span class="material-symbols-outlined">menu_open</span>
                         </button>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <div id="project-list" style="display: flex; flex-direction: column; gap: 0.25rem;">
                         <a class="nav-item active" href="#">
                             <span>Thesis Chapter 1</span>
                             <span class="material-symbols-outlined more-icon">more_horiz</span>
@@ -96,41 +98,89 @@
                         <span class="breadcrumb-separator">/</span>
                         <span class="breadcrumb-item active">Thesis Chapter 1</span>
                     </div>
-                    <button id="open-details" class="btn-icon hidden" aria-label="Open details" title="Open details" aria-expanded="false">
+                    <button id="open-details" class="btn-icon hidden" aria-label="Open details" title="Open details"
+                        aria-expanded="false">
                         <span class="material-symbols-outlined">chevron_right</span>
                     </button>
                 </div>
 
-                <div class="graph-container">
-                    <div class="graph-canvas">
-                        <div class="graph-placeholder">
-                            <div>
-                                <p class="font-bold text-lg" style="color: var(--text-muted);">Citation Network Graph
-                                </p>
-                                <p class="text-sm" style="color: var(--neutral-500);">Interactive graph visualization
-                                    canvas</p>
-                            </div>
-                        </div>
-
-                        <!-- Mock Nodes -->
-                        <div class="graph-node" style="top: 20%; left: 30%;">
-                            <div class="node-circle" style="border-color: var(--primary);">
-                                <p class="node-label">Turing, 1950</p>
-                            </div>
-                        </div>
-
-                        <div class="graph-node" style="bottom: 25%; left: 45%;">
-                            <div class="node-circle" style="border-color: #14b8a6;"> <!-- teal-500 -->
-                                <p class="node-label">Hinton, 2006</p>
-                            </div>
-                        </div>
-
-                        <div class="graph-node" style="top: 35%; right: 25%;">
-                            <div class="node-circle" style="border-color: #f59e0b;"> <!-- amber-500 -->
-                                <p class="node-label">Vaswani, 2017</p>
-                            </div>
-                        </div>
-                    </div>
+                <div style="flex: 1; overflow-y: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 2rem;"><input type="checkbox" /></th>
+                                <th>Title</th>
+                                <th style="width: 12rem;">Authors</th>
+                                <th style="width: 6rem;">Year</th>
+                                <th style="width: 8rem;">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="selected">
+                                <td><input type="checkbox" checked /></td>
+                                <td class="font-medium text-primary">Computing Machinery and Intelligence</td>
+                                <td>A. M. Turing</td>
+                                <td>1950</td>
+                                <td>Journal Article</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" /></td>
+                                <td class="font-medium">Attention is All You Need</td>
+                                <td>Vaswani, A., Shazeer, N., et al.</td>
+                                <td>2017</td>
+                                <td>Conference Paper</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" /></td>
+                                <td class="font-medium">AIMA: A Modern Approach</td>
+                                <td>Russell, S. J., &amp; Norvig, P.</td>
+                                <td>1995</td>
+                                <td>Book</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" /></td>
+                                <td class="font-medium">Deep Learning</td>
+                                <td>Goodfellow, I., Bengio, Y., et al.</td>
+                                <td>2016</td>
+                                <td>Book</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" /></td>
+                                <td class="font-medium">The Structure of Scientific Revolutions</td>
+                                <td>Kuhn, T. S.</td>
+                                <td>1962</td>
+                                <td>Book</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" /></td>
+                                <td class="font-medium">Thinking, Fast and Slow</td>
+                                <td>Kahneman, D.</td>
+                                <td>2011</td>
+                                <td>Book</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" /></td>
+                                <td class="font-medium">The Selfish Gene</td>
+                                <td>Dawkins, R.</td>
+                                <td>1976</td>
+                                <td>Book</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" /></td>
+                                <td class="font-medium">A Brief History of Time</td>
+                                <td>Hawking, S.</td>
+                                <td>1988</td>
+                                <td>Book</td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox" /></td>
+                                <td class="font-medium">The Man Who Knew Infinity</td>
+                                <td>Kanigel, R.</td>
+                                <td>1991</td>
+                                <td>Biography</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -192,7 +242,7 @@
                         <span class="material-symbols-outlined">content_copy</span>
                         <span>Copy</span>
                     </button>
-                    <button class="btn btn-primary" style="flex: 1;" data-modal="edit">
+                    <button class="btn btn-primary" style="flex: 1;">
                         <span class="material-symbols-outlined">edit</span>
                         <span>Edit</span>
                     </button>
@@ -200,8 +250,8 @@
             </aside>
         </div>
     </div>
+    <script type="module" src="js/app.js" defer></script>
     <script src="js/modals.js" defer></script>
-    <script type="module" src="js/edit-modal.js" defer></script>
     <script>
         // Details panel open/close handlers for pages that don't load the full app module
         (function () {
@@ -255,9 +305,13 @@
 
             // Ensure that when some other script shows details, the open button is hidden
             document.addEventListener('click', (e) => {
-                // clicking a graph node or similar should hide the open button
-                if (e.target.closest('.graph-node') || e.target.closest('.p-3') || e.target.closest('.project-item')) {
-                    if (openBtn) openBtn.classList.add('hidden');
+                if (e.target.closest('.p-3') || e.target.closest('.nav-item') || e.target.closest('tr')) {
+                    if (openBtn) {
+                        openBtn.classList.add('hidden');
+                        openBtn.setAttribute('aria-expanded', 'true');
+                        const ic = openBtn.querySelector('.material-symbols-outlined');
+                        if (ic) ic.textContent = 'chevron_left';
+                    }
                     if (panel) panel.classList.remove('collapsed');
                 }
             });

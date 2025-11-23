@@ -38,3 +38,7 @@ venv/
 *.tmp
 *.swp
 plan-citaraIntegration.prompt.md
+/observacao
+/old_sysem
+old_sysem/*.*
+observacao/*.*
