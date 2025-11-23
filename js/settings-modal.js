@@ -247,13 +247,34 @@ function createApiKeyRow(modal, provider, initialValue = '') {
     try {
       const models = await fetchModelsForProvider(provider, key);
       if (models && models.length) {
-        applyModelsToSelect(modal, [{ provider, models }]);
-        testBtn.style.backgroundColor = '#16a34a';
-        testBtn.style.color = '#ffffff';
-        testBtn.innerHTML = 'OK ✓';
-        status.textContent = 'Models discovered';
-        status.style.color = '#16a34a';
-        setTimeout(() => { try { testBtn.innerHTML = orig; testBtn.style.backgroundColor = ''; testBtn.style.color = ''; testBtn.disabled = false; status.textContent = ''; } catch (e) {} }, 1500);
+        // If provider is openrouter, do an extra lightweight validation request
+        let valid = true;
+        if (provider === 'openrouter') {
+          status.textContent = 'Validating key...';
+          status.style.color = 'var(--text-muted)';
+          try {
+            valid = await validateKeyForProvider(provider, key, models[0]);
+          } catch (err) {
+            console.warn('validation failed', err);
+            valid = false;
+          }
+        }
+
+        if (valid) {
+          applyModelsToSelect(modal, [{ provider, models }]);
+          testBtn.style.backgroundColor = '#16a34a';
+          testBtn.style.color = '#ffffff';
+          testBtn.innerHTML = 'OK ✓';
+          status.textContent = 'Key valid';
+          status.style.color = '#16a34a';
+          setTimeout(() => { try { testBtn.innerHTML = orig; testBtn.style.backgroundColor = ''; testBtn.style.color = ''; testBtn.disabled = false; status.textContent = ''; } catch (e) {} }, 1500);
+        } else {
+          // invalid key
+          status.textContent = 'Invalid API key';
+          status.style.color = '#dc2626';
+          testBtn.innerHTML = orig;
+          testBtn.disabled = false;
+        }
       } else {
         // fallback: refresh all models
         await refreshAvailableModels(modal);
@@ -279,6 +300,52 @@ function createApiKeyRow(modal, provider, initialValue = '') {
   });
 
   return row;
+}
+
+async function validateKeyForProvider(provider, key, sampleModel) {
+  // Only implement a lightweight validation for OpenRouter here.
+  // We perform a tiny POST to the chat completions endpoint with max_tokens=1
+  // to verify the key is accepted. Returns true if accepted, false otherwise.
+  try {
+    if (provider === 'openrouter') {
+      const url = 'https://openrouter.ai/api/v1/chat/completions';
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const body = {
+          model: sampleModel || 'openai/gpt-3.5-turbo',
+          messages: [{ role: 'user', content: 'ping' }],
+          max_tokens: 1,
+          temperature: 0
+        };
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${key}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        if (!res.ok) {
+          // invalid key or not authorized
+          return false;
+        }
+        // ok
+        return true;
+      } catch (err) {
+        clearTimeout(timeout);
+        // fetch failed (network/CORS) -> treat as invalid for validation purposes
+        console.warn('validateKeyForProvider fetch error', err);
+        return false;
+      }
+    }
+  } catch (e) {
+    console.warn('validateKeyForProvider failed', e);
+  }
+  return false;
 }
 
 function applyModelsToSelect(modal, providersModels) {
