@@ -338,12 +338,23 @@ async function loadAuthorPapers(authorId, name) {
   paginationEl.innerHTML = ''; // No pagination for simple author view yet
 }
 
-// Debounced input handler
-const debounced = Utils.debounce(() => {
-  performSearch(input.value, 1);
-}, 500);
+// Require explicit search trigger: Enter key or click on search icon
+const searchIcon = (input && input.closest && input.closest('.search-container'))
+  ? input.closest('.search-container').querySelector('.search-icon')
+  : document.querySelector('.search-container .search-icon');
+if (searchIcon) {
+  searchIcon.style.cursor = 'pointer';
+  searchIcon.addEventListener('click', () => {
+    performSearch(input.value, 1);
+  });
+}
 
-input.addEventListener('input', debounced);
+// Trigger search on Enter key
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    performSearch(input.value, 1);
+  }
+});
 
 // Pagination click handler
 paginationEl.addEventListener('click', e => {

@@ -195,7 +195,8 @@ input {
     top: 50%;
     transform: translateY(-50%);
     color: var(--neutral-500);
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .search-input {
