@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+</head>
+<body>
+  <div class="modal-overlay">
+    <div class="modal-container" style="max-width:34rem;">
+      <header class="modal-header">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <h3 class="font-bold">Find PDF</h3>
+        </div>
+        <button class="btn-icon" data-modal-close>
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </header>
+
+      <div class="modal-body" style="padding:1rem 1.25rem;">
+        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+          <p class="text-sm" style="color:var(--text-muted);">This will open the DOI resolver in a new tab.</p>
+          <div>
+            <label class="text-sm font-medium" style="color:var(--text-muted);">Resolved URL</label>
+            <div id="doi-display" style="margin-top:0.5rem; padding:0.75rem; background:var(--panel-bg); border-radius:6px; border:1px solid rgba(255,255,255,0.03); word-break:break-all;">No DOI available</div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <div style="display:flex; gap:0.5rem;">
+          <button id="copy-doi-btn" class="btn">Copy DOI</button>
+          <button id="open-doi-btn" class="btn btn-primary">Open DOI</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+</body>
+</html>

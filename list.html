@@ -35,7 +35,7 @@
                     <span class="material-symbols-outlined search-icon">search</span>
                     <input class="search-input" placeholder="Search authors, titles, keywords..." />
                 </div>
-                <button class="btn btn-outline">
+                <button class="btn btn-outline" data-modal="filters">
                     <span class="material-symbols-outlined">filter_list</span>
                     <span>Filters</span>
                 </button>
@@ -231,7 +231,7 @@
                     </div>
                 </div>
                 <div id="details-actions" class="details-actions">
-                    <button class="btn btn-outline" style="flex: 1;">
+                    <button class="btn btn-outline" style="flex: 1;" data-modal="find_pdf">
                         <span class="material-symbols-outlined">picture_as_pdf</span>
                         <span>Find PDF</span>
                     </button>
@@ -249,6 +249,8 @@
     </div>
     <script src="js/modals.js" defer></script>
     <script type="module" src="js/edit-modal.js" defer></script>
+    <script type="module" src="js/find-pdf.js" defer></script>
+    <script type="module" src="js/filters-modal.js" defer></script>
     <script>
         // Details panel open/close handlers for pages that don't load the full app module
         (function () {
