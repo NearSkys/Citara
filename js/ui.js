@@ -27,10 +27,32 @@ export const UI = {
         this.elements.viewGraphBtn?.addEventListener('click', () => this.toggleView('graph'));
         this.elements.viewListBtn?.addEventListener('click', () => this.toggleView('list'));
 
-        // Close Details
+        // Close Details: add collapsed class (animated) and show open button
         document.getElementById('close-details')?.addEventListener('click', () => {
-            this.elements.detailsPanel.classList.add('translate-x-full');
-            this.elements.detailsPanel.style.transform = 'translateX(100%)';
+            if (this.elements.detailsPanel) {
+                this.elements.detailsPanel.classList.add('collapsed');
+            }
+            const openBtn = document.getElementById('open-details');
+            if (openBtn) {
+                openBtn.classList.remove('hidden');
+                openBtn.setAttribute('aria-expanded', 'false');
+                const ic = openBtn.querySelector('.material-symbols-outlined');
+                if (ic) ic.textContent = 'chevron_right';
+            }
+        });
+
+        // Open Details (restore panel)
+        document.getElementById('open-details')?.addEventListener('click', () => {
+            if (this.elements.detailsPanel) {
+                this.elements.detailsPanel.classList.remove('collapsed');
+            }
+            const openBtn = document.getElementById('open-details');
+            if (openBtn) {
+                openBtn.setAttribute('aria-expanded', 'true');
+                const ic = openBtn.querySelector('.material-symbols-outlined');
+                if (ic) ic.textContent = 'chevron_left';
+                openBtn.classList.add('hidden');
+            }
         });
 
         // New Project
@@ -165,8 +187,14 @@ export const UI = {
         const content = this.elements.detailsContent;
         const actions = this.elements.detailsActions;
 
-        // Slide in
-        panel.style.transform = 'translateX(0)';
+        // Ensure panel is visible in layout and slide in
+        if (panel) {
+            panel.style.display = 'flex';
+            panel.style.transform = 'translateX(0)';
+        }
+        // Hide open button if present
+        const openBtn = document.getElementById('open-details');
+        if (openBtn) openBtn.classList.add('hidden');
 
         // Populate content
         let authors = 'Unknown';

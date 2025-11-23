@@ -87,10 +87,15 @@
             </aside>
 
             <div class="scrollable-area">
-                <div class="breadcrumb">
-                    <a class="breadcrumb-item" href="#">My Library</a>
-                    <span class="breadcrumb-separator">/</span>
-                    <span class="breadcrumb-item active">Thesis Chapter 1</span>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div class="breadcrumb">
+                        <a class="breadcrumb-item" href="#">My Library</a>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-item active">Thesis Chapter 1</span>
+                    </div>
+                    <button id="open-details" class="btn-icon hidden" aria-label="Open details" title="Open details" aria-expanded="false">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
                 </div>
 
                 <div style="flex: 1; overflow-y: auto;">
@@ -173,14 +178,14 @@
                 </div>
             </div>
 
-            <aside class="details-panel">
+            <aside id="details-panel" class="details-panel">
                 <div class="details-header">
                     <h3 class="font-bold">Citation Details</h3>
-                    <button class="btn-icon">
+                    <button id="close-details" class="btn-icon" aria-label="Close details" title="Close details">
                         <span class="material-symbols-outlined">close</span>
                     </button>
                 </div>
-                <div class="details-content">
+                <div id="details-content" class="details-content">
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                         <h4 class="font-bold text-lg">Computing Machinery and Intelligence</h4>
                         <p class="text-sm" style="color: var(--text-muted);">A. M. Turing</p>
@@ -222,7 +227,7 @@
                         </p>
                     </div>
                 </div>
-                <div class="details-actions">
+                <div id="details-actions" class="details-actions">
                     <button class="btn btn-outline" style="flex: 1;">
                         <span class="material-symbols-outlined">picture_as_pdf</span>
                         <span>Find PDF</span>
@@ -240,6 +245,47 @@
         </div>
     </div>
     <script src="js/modals.js" defer></script>
+    <script>
+        // Details panel open/close handlers for pages that don't load the full app module
+        (function () {
+            const panel = document.getElementById('details-panel');
+            const openBtn = document.getElementById('open-details');
+            const closeBtn = document.getElementById('close-details');
+
+            if (closeBtn) closeBtn.addEventListener('click', () => {
+                if (panel) panel.classList.add('collapsed');
+                if (openBtn) {
+                    openBtn.classList.remove('hidden');
+                    openBtn.setAttribute('aria-expanded', 'false');
+                    const ic = openBtn.querySelector('.material-symbols-outlined');
+                    if (ic) ic.textContent = 'chevron_right';
+                }
+            });
+
+            if (openBtn) openBtn.addEventListener('click', () => {
+                if (panel) panel.classList.remove('collapsed');
+                if (openBtn) {
+                    openBtn.setAttribute('aria-expanded', 'true');
+                    const ic = openBtn.querySelector('.material-symbols-outlined');
+                    if (ic) ic.textContent = 'chevron_left';
+                    openBtn.classList.add('hidden');
+                }
+            });
+
+            // Ensure that when some other script shows details, the open button is hidden
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.p-3') || e.target.closest('.project-item') || e.target.closest('tr')) {
+                    if (openBtn) {
+                        openBtn.classList.add('hidden');
+                        openBtn.setAttribute('aria-expanded', 'true');
+                        const ic = openBtn.querySelector('.material-symbols-outlined');
+                        if (ic) ic.textContent = 'chevron_left';
+                    }
+                    if (panel) panel.classList.remove('collapsed');
+                }
+            });
+        })();
+    </script>
 </body>
 
 </html>

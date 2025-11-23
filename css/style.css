@@ -456,6 +456,8 @@ input {
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+    overflow: hidden;
+    transition: width 300ms ease, transform 300ms ease, opacity 200ms ease, padding 200ms ease;
 }
 
 .dark .details-panel {
@@ -482,6 +484,20 @@ input {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+}
+
+/* Collapsed state for smooth close/open */
+.details-panel.collapsed {
+    width: 0 !important;
+    padding: 0 !important;
+    border-left: none !important;
+    opacity: 0;
+    transform: translateX(100%);
+    pointer-events: none;
+}
+
+.details-panel.collapsed .details-content {
+    visibility: hidden;
 }
 
 .details-actions {
