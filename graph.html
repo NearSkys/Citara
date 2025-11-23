@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Citara - Academic Citation Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <link href="css/style.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-area">
+                    <span class="material-symbols-outlined logo-icon">local_library</span>
+                    <h2 class="logo-text">Citara</h2>
+                </div>
+                <nav class="nav-pills">
+                    <a class="nav-link active" href="#">Graph View</a>
+                    <a class="nav-link" href="list.html">List View</a>
+                    <a class="nav-link" href="search.html">Search</a>
+                </nav>
+            </div>
+            <div class="header-right">
+                <div class="search-container">
+                    <span class="material-symbols-outlined search-icon">search</span>
+                    <input class="search-input" placeholder="Search authors, titles, keywords..." />
+                </div>
+                <button class="btn btn-outline">
+                    <span class="material-symbols-outlined">filter_list</span>
+                    <span>Filters</span>
+                </button>
+                <button class="btn btn-primary-light" data-modal="upload">
+                    <span class="material-symbols-outlined">upload_file</span>
+                    <span>Upload PDF</span>
+                </button>
+                <button class="btn btn-primary">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    <span>Add Citation</span>
+                </button>
+                <button class="btn-icon" data-modal="settings">
+                    <span class="material-symbols-outlined">settings</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-header">
+                        <h3 class="sidebar-title">Projects</h3>
+                        <button class="btn-icon" style="width: auto; height: auto;">
+                            <span class="material-symbols-outlined">menu_open</span>
+                        </button>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                        <a class="nav-item active" href="#">
+                            <span>Thesis Chapter 1</span>
+                            <span class="material-symbols-outlined more-icon">more_horiz</span>
+                        </a>
+                        <a class="nav-item" href="#">
+                            <span>Lit Review - AI Ethics</span>
+                            <span class="material-symbols-outlined more-icon">more_horiz</span>
+                        </a>
+                        <a class="nav-item" href="#">
+                            <span>Project Neurovis</span>
+                            <span class="material-symbols-outlined more-icon">more_horiz</span>
+                        </a>
+                        <a class="nav-item" href="#">
+                            <span>Quantum Computing Paper</span>
+                            <span class="material-symbols-outlined more-icon">more_horiz</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="sidebar-section">
+                    <button class="btn btn-primary-light" style="width: 100%;" data-modal="add-project">
+                        <span class="material-symbols-outlined">add</span>
+                        <span>New Project</span>
+                    </button>
+                </div>
+            </aside>
+
+            <div class="scrollable-area">
+                <div class="breadcrumb">
+                    <a class="breadcrumb-item" href="#">My Library</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="breadcrumb-item active">Thesis Chapter 1</span>
+                </div>
+
+                <div class="graph-container">
+                    <div class="graph-canvas">
+                        <div class="graph-placeholder">
+                            <div>
+                                <p class="font-bold text-lg" style="color: var(--text-muted);">Citation Network Graph
+                                </p>
+                                <p class="text-sm" style="color: var(--neutral-500);">Interactive graph visualization
+                                    canvas</p>
+                            </div>
+                        </div>
+
+                        <!-- Mock Nodes -->
+                        <div class="graph-node" style="top: 20%; left: 30%;">
+                            <div class="node-circle" style="border-color: var(--primary);">
+                                <p class="node-label">Turing, 1950</p>
+                            </div>
+                        </div>
+
+                        <div class="graph-node" style="bottom: 25%; left: 45%;">
+                            <div class="node-circle" style="border-color: #14b8a6;"> <!-- teal-500 -->
+                                <p class="node-label">Hinton, 2006</p>
+                            </div>
+                        </div>
+
+                        <div class="graph-node" style="top: 35%; right: 25%;">
+                            <div class="node-circle" style="border-color: #f59e0b;"> <!-- amber-500 -->
+                                <p class="node-label">Vaswani, 2017</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="details-panel">
+                <div class="details-header">
+                    <h3 class="font-bold">Citation Details</h3>
+                    <button class="btn-icon">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <div class="details-content">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <h4 class="font-bold text-lg">Computing Machinery and Intelligence</h4>
+                        <p class="text-sm" style="color: var(--text-muted);">A. M. Turing</p>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; align-items: center;">
+                            <span class="text-sm font-medium"
+                                style="width: 5rem; color: var(--text-muted);">Year:</span>
+                            <span class="text-sm">1950</span>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <span class="text-sm font-medium"
+                                style="width: 5rem; color: var(--text-muted);">Type:</span>
+                            <span class="text-sm">Journal Article</span>
+                        </div>
+                        <div style="display: flex; align-items: flex-start;">
+                            <span class="text-sm font-medium"
+                                style="width: 5rem; color: var(--text-muted);">Tags:</span>
+                            <div class="tag-container">
+                                <span class="tag tag-blue">Machine Learning</span>
+                                <span class="tag tag-green">Core Reading</span>
+                                <span class="tag tag-yellow">AI</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h5 class="text-sm font-bold">Abstract</h5>
+                            <button class="btn-icon" style="width: auto; height: auto;">
+                                <span class="material-symbols-outlined">unfold_less</span>
+                            </button>
+                        </div>
+                        <p class="text-sm" style="color: var(--text-muted); line-height: 1.6;">
+                            I propose to consider the question, "Can machines think?" This should begin with definitions
+                            of the meaning of the terms "machine" and "think". The definitions might be framed so as to
+                            reflect so far as possible the normal use of the words, but this attitude is dangerous...
+                        </p>
+                    </div>
+                </div>
+                <div class="details-actions">
+                    <button class="btn btn-outline" style="flex: 1;">
+                        <span class="material-symbols-outlined">picture_as_pdf</span>
+                        <span>Find PDF</span>
+                    </button>
+                    <button class="btn btn-outline" style="flex: 1;">
+                        <span class="material-symbols-outlined">content_copy</span>
+                        <span>Copy</span>
+                    </button>
+                    <button class="btn btn-primary" style="flex: 1;">
+                        <span class="material-symbols-outlined">edit</span>
+                        <span>Edit</span>
+                    </button>
+                </div>
+            </aside>
+        </div>
+    </div>
+    <script src="js/modals.js" defer></script>
+</body>
+
+</html>
