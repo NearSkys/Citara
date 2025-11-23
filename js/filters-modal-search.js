@@ -1,5 +1,3 @@
-import { dispatchEvent } from './utils.js';
-
 const STORAGE_KEY = 'citara.filters.v1.search';
 
 function readStored() {
@@ -53,7 +51,7 @@ document.addEventListener('modal:open', (ev) => {
     e.preventDefault();
     const filters = serializeForm(form);
     writeStored(filters);
-    dispatchEvent('filters:apply', { filters });
+    document.dispatchEvent(new CustomEvent('filters:apply', { detail: { filters } }));
     document.dispatchEvent(new CustomEvent('modal:close'));
   });
 
@@ -61,7 +59,7 @@ document.addEventListener('modal:open', (ev) => {
     e.preventDefault();
     form.reset();
     writeStored({});
-    dispatchEvent('filters:reset', {});
+    document.dispatchEvent(new CustomEvent('filters:reset'));
     document.dispatchEvent(new CustomEvent('modal:close'));
   });
 });

@@ -38,13 +38,15 @@
                 <!-- Left Side: Upload & Config -->
                 <div
                     style="width: 50%; display: flex; flex-direction: column; padding: 1.5rem; border-right: 1px solid var(--neutral-200);">
-                    <div class="drop-zone" style="flex: 1;">
+                    <div class="drop-zone" id="upload-drop-zone" style="flex: 1;">
                         <span class="material-symbols-outlined"
                             style="font-size: 3rem; color: var(--neutral-500);">cloud_upload</span>
                         <h2 class="font-bold" style="margin-top: 0.5rem; color: var(--text-main);">Drag &amp; Drop PDF
                             here</h2>
                         <p class="text-sm" style="color: var(--text-muted); margin-top: 0.25rem;">or</p>
-                        <button class="btn btn-primary" style="margin-top: 1rem;">Browse Files</button>
+                        <button class="btn btn-primary" id="browse-files-btn" style="margin-top: 1rem;">Browse Files</button>
+                        <input id="upload-file-input" type="file" accept="application/pdf" style="display:none" />
+                        <div id="upload-file-name" style="margin-top:0.75rem; color:var(--text-muted); font-size:0.9rem;"></div>
                         <p class="text-xs" style="color: var(--text-muted); margin-top: 1rem;">Max file size: 50MB</p>
                     </div>
 
@@ -83,27 +85,18 @@
                 <!-- Right Side: Preview/Results -->
                 <div style="width: 50%; display: flex; flex-direction: column;">
                     <div
-                        style="flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div style="flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem;">
                         <div>
                             <h3 class="text-sm font-bold">Extracted Information</h3>
                             <p class="text-sm" style="color: var(--text-muted);">Results from <span
                                     class="font-bold text-primary">Gemini 1.5 Pro</span> will appear here after upload.
                             </p>
                         </div>
-
-                        <div style="display: flex; flex-direction: column; gap: 1rem; opacity: 0.5;">
-                            <div
-                                style="height: 1rem; background-color: var(--neutral-200); border-radius: var(--radius-sm); width: 75%;">
-                            </div>
-                            <div
-                                style="height: 1rem; background-color: var(--neutral-200); border-radius: var(--radius-sm); width: 50%;">
-                            </div>
-                            <div
-                                style="height: 1rem; background-color: var(--neutral-200); border-radius: var(--radius-sm); width: 100%;">
-                            </div>
-                            <div
-                                style="height: 1rem; background-color: var(--neutral-200); border-radius: var(--radius-sm); width: 66%;">
-                            </div>
+                        <div id="extracted-info" style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <div style="font-weight:600;" id="extracted-title">No file processed yet</div>
+                            <div id="extracted-authors" style="color:var(--text-muted); font-size:0.95rem;"></div>
+                            <div id="extracted-year" style="color:var(--text-muted); font-size:0.95rem;"></div>
+                            <pre id="extracted-snippet" style="white-space:pre-wrap; color:var(--text-muted); font-size:0.9rem;"></pre>
                         </div>
 
                         <div style="border-top: 1px solid var(--neutral-200); padding-top: 1.5rem;">
@@ -149,8 +142,8 @@
             </div>
 
             <footer class="modal-footer">
-                <button class="btn btn-outline">Cancel</button>
-                <button class="btn btn-primary" disabled style="opacity: 0.5; cursor: not-allowed;">Add to
+                <button class="btn btn-outline" id="upload-cancel">Cancel</button>
+                <button class="btn btn-primary" id="add-to-library" disabled style="opacity: 0.5; cursor: not-allowed;">Add to
                     Library</button>
             </footer>
         </div>
