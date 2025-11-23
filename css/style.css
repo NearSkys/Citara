@@ -303,6 +303,7 @@ input {
     flex-direction: column;
     justify-content: space-between;
     flex-shrink: 0;
+    transition: width 300ms ease, padding 250ms ease, border 250ms ease, opacity 200ms ease;
 }
 
 .dark .sidebar {
@@ -344,6 +345,15 @@ input {
 
 .nav-item:hover {
     background-color: var(--neutral-100);
+}
+
+/* Collapsed sidebar */
+.sidebar.collapsed {
+    width: 0 !important;
+    padding: 0 !important;
+    border-right: none !important;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .nav-item.active {

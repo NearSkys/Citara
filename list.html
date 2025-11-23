@@ -16,11 +16,14 @@
 <body>
     <div class="app-container">
         <header class="app-header">
-            <div class="header-left">
+                <div class="header-left">
                 <div class="logo-area">
                     <span class="material-symbols-outlined logo-icon">local_library</span>
                     <h2 class="logo-text">Citara</h2>
                 </div>
+                <button id="open-projects" class="btn-icon hidden" aria-label="Open projects" title="Open projects" aria-expanded="true" style="margin-left:8px;">
+                    <span class="material-symbols-outlined">menu_open</span>
+                </button>
                 <nav class="nav-pills">
                     <a class="nav-link" href="graph.html">Graph View</a>
                     <a class="nav-link active" href="#">List View</a>
@@ -51,11 +54,11 @@
         </header>
 
         <div class="main-content">
-            <aside class="sidebar">
+            <aside id="projects-sidebar" class="sidebar">
                 <div class="sidebar-section">
                     <div class="sidebar-header">
                         <h3 class="sidebar-title">Projects</h3>
-                        <button class="btn-icon" style="width: auto; height: auto;">
+                        <button id="close-projects" class="btn-icon" style="width: auto; height: auto;" aria-label="Close projects" title="Close projects" aria-controls="projects-sidebar">
                             <span class="material-symbols-outlined">menu_open</span>
                         </button>
                     </div>
@@ -251,6 +254,9 @@
             const panel = document.getElementById('details-panel');
             const openBtn = document.getElementById('open-details');
             const closeBtn = document.getElementById('close-details');
+            const projectsSidebar = document.getElementById('projects-sidebar');
+            const closeProjectsBtn = document.getElementById('close-projects');
+            const openProjectsBtn = document.getElementById('open-projects');
 
             if (closeBtn) closeBtn.addEventListener('click', () => {
                 if (panel) panel.classList.add('collapsed');
@@ -269,6 +275,27 @@
                     const ic = openBtn.querySelector('.material-symbols-outlined');
                     if (ic) ic.textContent = 'chevron_left';
                     openBtn.classList.add('hidden');
+                }
+            });
+
+            // Projects sidebar handlers
+            if (closeProjectsBtn) closeProjectsBtn.addEventListener('click', () => {
+                if (projectsSidebar) projectsSidebar.classList.add('collapsed');
+                if (openProjectsBtn) {
+                    openProjectsBtn.classList.remove('hidden');
+                    openProjectsBtn.setAttribute('aria-expanded', 'false');
+                    const ic = openProjectsBtn.querySelector('.material-symbols-outlined');
+                    if (ic) ic.textContent = 'menu';
+                }
+            });
+
+            if (openProjectsBtn) openProjectsBtn.addEventListener('click', () => {
+                if (projectsSidebar) projectsSidebar.classList.remove('collapsed');
+                if (openProjectsBtn) {
+                    openProjectsBtn.setAttribute('aria-expanded', 'true');
+                    const ic = openProjectsBtn.querySelector('.material-symbols-outlined');
+                    if (ic) ic.textContent = 'menu_open';
+                    openProjectsBtn.classList.add('hidden');
                 }
             });
 

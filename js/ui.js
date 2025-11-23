@@ -65,6 +65,31 @@ export const UI = {
                 this.updateGraph();
             }
         });
+
+        // Projects sidebar toggle (if elements present)
+        const projectsSidebar = document.getElementById('projects-sidebar');
+        const closeProjectsBtn = document.getElementById('close-projects');
+        const openProjectsBtn = document.getElementById('open-projects');
+
+        if (closeProjectsBtn) closeProjectsBtn.addEventListener('click', () => {
+            if (projectsSidebar) projectsSidebar.classList.add('collapsed');
+            if (openProjectsBtn) {
+                openProjectsBtn.classList.remove('hidden');
+                openProjectsBtn.setAttribute('aria-expanded', 'false');
+                const ic = openProjectsBtn.querySelector('.material-symbols-outlined');
+                if (ic) ic.textContent = 'menu';
+            }
+        });
+
+        if (openProjectsBtn) openProjectsBtn.addEventListener('click', () => {
+            if (projectsSidebar) projectsSidebar.classList.remove('collapsed');
+            if (openProjectsBtn) {
+                openProjectsBtn.setAttribute('aria-expanded', 'true');
+                const ic = openProjectsBtn.querySelector('.material-symbols-outlined');
+                if (ic) ic.textContent = 'menu_open';
+                openProjectsBtn.classList.add('hidden');
+            }
+        });
     },
 
     toggleView(view) {
