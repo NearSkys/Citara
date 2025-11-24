@@ -2,7 +2,7 @@ import { API } from './api.js';
 import { Utils } from './utils.js';
 
 // Elements
-const input = document.querySelector('.search-container input.search-input[placeholder^="Enter"]');
+const input = document.getElementById('main-search-input') || document.querySelector('.search-container input.search-input[placeholder^="Enter"]');
 const resultsEl = document.getElementById('search-results');
 const paginationEl = document.getElementById('search-pagination');
 const headerCountEl = document.querySelector('h3.text-lg + p.text-sm');
@@ -433,11 +433,13 @@ if (searchIcon) {
 }
 
 // Trigger search on Enter key
-input.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    performSearch(input.value, 1);
-  }
-});
+if (input) {
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      performSearch(input.value, 1);
+    }
+  });
+}
 
 // Pagination click handler
 paginationEl.addEventListener('click', e => {
