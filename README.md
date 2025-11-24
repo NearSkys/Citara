@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./images/logo.png" alt="Logo Citara" width="120"/>
+  <img src="./images/logo.PNG" alt="Logo Citara" width="120"/>
   <h1>Citara</h1>
   <h3>Gerenciador de Referências Acadêmicas</h3>
 </div>
