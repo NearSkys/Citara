@@ -79,5 +79,5 @@ Como resultado, a funcionalidade de IA foi mantida como protótipo/feature exper
 
 ---
 
-## Deploy no GitHub Pages
+## Deploy no GitHub Pages.
 
